@@ -1,0 +1,8 @@
+# Common
+.DS_Store
+*.log
+
+# Project-Specific
+.sass-cache
+/node_modules
+config/local.*
