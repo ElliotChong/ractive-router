@@ -20,28 +20,32 @@ var ractive = new Ractive({
 	data: {
 		routes: [
 			{
-				path: "/"
-				title: "Home"
-				component: Ractive.extend
+				path: "/",
+				title: "Home",
+				component: Ractive.extend({
 					template: "Welcome Home!"
+				})
 			},
 			{
-				path: "/foo"
-				title: "Foo"
-				component: Ractive.extend
+				path: "/foo",
+				title: "Foo",
+				component: Ractive.extend({
 					template: "Welcome to Foo!"
+				})
 			},
 			{
-				path: "/bar"
-				title: "Bar"
-				component: Ractive.extend
+				path: "/bar",
+				title: "Bar",
+				component: Ractive.extend({
 					template: "Welcome to Bar!"
+				})
 			},
 			{
-				path: "*"
-				title: "Four Oh Four"
-				component: Ractive.extend
+				path: "*",
+				title: "Four Oh Four",
+				component: Ractive.extend({
 					template: "This isn't the page you're looking for."
+				})
 			}
 		]
 	},
