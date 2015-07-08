@@ -78,7 +78,7 @@ RouteContainer = Ractive.extend
 		if not window?
 			return
 
-		@_super()
+		@_super?.apply @, arguments
 
 		initializePage @get "pageOptions"
 
@@ -102,7 +102,7 @@ RouteContainer = Ractive.extend
 
 		# Remove any listeners attached to `this.root`
 		@onteardown = ->
-			@_super()
+			@_super?.apply @, arguments
 
 			@root.off "*.#{events.NAVIGATE} #{events.NAVIGATE}", navigate
 
