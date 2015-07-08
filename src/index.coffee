@@ -32,7 +32,7 @@ initializePage = do ->
 		# Override Page.js's default pushState functionality
 		show = page.show.bind page
 		page.show = (p_path, p_state, p_dispatch, p_push) ->
-			show p_path, p_state, p_dispatch, p_push || p_options.pushState || p_options.pushstate
+			show p_path, p_state, p_dispatch, p_push || p_options?.pushState || p_options?.pushstate
 
 		# Initialize Page.js
 		page.start p_options
