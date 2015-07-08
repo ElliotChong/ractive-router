@@ -20,7 +20,7 @@ initializePage = do ->
 				console.warn "Page.js was initialized multiple times with different options"
 				console.warn "First Instantiation (Currently In Use):"
 				console.warn options
-				console.warn "Other:"
+				console.warn "Other (Canceled Initialization):"
 				console.warn p_options
 			return
 
