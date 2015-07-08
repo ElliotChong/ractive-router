@@ -86,25 +86,25 @@ RouteContainer = Ractive.extend
 		@observe "routes", @parseRoutes
 
 		# Attach a listener to the root Ractive instance for `navigate`
-		navigate = (p_event, p_path) ->
-			if not p_path?
-				if not isString p_event
-					console.warn "A path wasn't passed to the `navigate` event handler."
-					console.dir arguments
-					return
+		@root.on "*.#{events.NAVIGATE} #{events.NAVIGATE}", @navigate
 
-				p_path = p_event
-				p_event = null
+	# Remove listeners attached to `this.root`
+	onteardown: ->
+		@_super?.apply @, arguments
 
-			page.show p_path
+		@root.off "*.#{events.NAVIGATE} #{events.NAVIGATE}", @navigate
 
-		@root.on "*.#{events.NAVIGATE} #{events.NAVIGATE}", navigate
+	navigate: (p_event, p_path) ->
+		if not p_path?
+			if not isString p_event
+				console.warn "A path wasn't passed to the `navigate` event handler."
+				console.dir arguments
+				return
 
-		# Remove any listeners attached to `this.root`
-		@onteardown = ->
-			@_super?.apply @, arguments
+			p_path = p_event
+			p_event = null
 
-			@root.off "*.#{events.NAVIGATE} #{events.NAVIGATE}", navigate
+		page.show p_path
 
 	showContent: (p_component, p_context) ->
 		# Hide the current content
