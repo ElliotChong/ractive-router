@@ -38,7 +38,7 @@ initializePage = do ->
 		page.start p_options
 
 RouteContainer = Ractive.extend
-	template: require "./template"
+	template: require "./template.html"
 
 	data: ->
 		defaultTitle: ""
