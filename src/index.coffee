@@ -80,8 +80,6 @@ RouteContainer = Ractive.extend
 
 		@_super()
 
-		page = require "page"
-
 		initializePage @get "pageOptions"
 
 		# Parse and observe the routes
