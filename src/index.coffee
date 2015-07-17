@@ -49,6 +49,10 @@ initializePage = do ->
 			if isString options.initialRoute
 				options.dispatch = false
 
+			# Set the router's base path when determining routes
+			if isString options.base
+				page.base options.base
+
 		# Initialize Page.js
 		page.start options
 
