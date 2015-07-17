@@ -16,11 +16,11 @@ initializePage = do ->
 
 	(p_options) ->
 		if isInitialized is true
-			if not isEqual options, p_options
+			if Ractive.DEBUG is true and p_options? and not isEqual options, p_options
 				console.warn "Page.js was initialized multiple times with different options"
-				console.warn "First Instantiation (Currently In Use):"
+				console.warn "In-Use Options:"
 				console.warn options
-				console.warn "Other (Canceled Initialization):"
+				console.warn "Canceled Options:"
 				console.warn p_options
 			return
 
