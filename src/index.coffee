@@ -36,7 +36,7 @@ initializePage = do ->
 				show p_path, p_state, p_dispatch, p_push || options.pushState || options.pushstate
 
 		# Initialize Page.js
-		page.start p_options
+		page.start options
 
 RouteContainer = Ractive.extend
 	template: require "./template.html"
