@@ -46,6 +46,7 @@ RouteContainer = Ractive.extend
 		middleware: undefined # Array
 		pageOptions: undefined # Object
 		routes: undefined # Array
+		routeContext: undefined # Object
 		showContent: false
 
 	computed:
