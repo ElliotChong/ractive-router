@@ -44,6 +44,11 @@ initializePage = do ->
 			page.show = (p_path, p_state, p_dispatch, p_push) ->
 				show p_path, p_state, p_dispatch, p_push || options.pushState || options.pushstate
 
+			# Always disable `dispatch` when an initial route is set since that
+			# will be navigated to immediately
+			if isString options.initialRoute
+				options.dispatch = false
+
 		# Initialize Page.js
 		page.start options
 
@@ -91,13 +96,18 @@ RouteContainer = Ractive.extend
 
 		@_super?.apply @, arguments
 
-		initializePage @get "pageOptions"
+		options = @get "pageOptions"
+		initializePage options
 
 		# Parse and observe the routes
 		@observe "routes", @parseRoutes
 
 		# Attach a listener to the root Ractive instance for `navigate`
 		@root.on "*.#{events.NAVIGATE} #{events.NAVIGATE}", @navigate
+
+		# Immediately navigate to a specified route
+		if isString options?.initialRoute
+			@navigate options.initialRoute
 
 	# Remove listeners attached to `this.root`
 	onteardown: ->
