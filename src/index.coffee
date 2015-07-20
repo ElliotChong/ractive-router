@@ -235,7 +235,8 @@ RouteContainer = Ractive.extend
 		# Add any custom middleware in the format of `(p_context, p_next) ->`
 		if p_descriptor.middleware?
 			if isArray p_descriptor.middleware
-				# Iterate through the supplied middleware and bind `this` to the current scope
+				# Iterate through the supplied middleware and bind `this` to
+				# the current scope
 				for method in p_descriptor.middleware
 					middleware.push @_wrapMiddleware method
 
