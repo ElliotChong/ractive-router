@@ -223,10 +223,9 @@ RouteContainer = Ractive.extend
 
 			component = p_context.component || p_context.routeDescriptor.component
 
-			if not component?
-				throw new Error "A `component` property is required to parse a route:\n#{JSON.stringify p_context.routeDescriptor, null, 4}\n#{JSON.stringify p_context, null, 4}"
+			if component?
+				@showContent component, p_context
 
-			@showContent component, p_context
 
 		page.apply null, middleware
 
