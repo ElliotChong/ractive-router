@@ -9,7 +9,9 @@
 	"main": "index.js",
 	"scripts": {
 		"test": "./node_modules/.bin/coffee test | ./node_modules/.bin/faucet",
-		"test-browser": "echo 'Navigate to http://localhost:2222 to execute tests' && ./node_modules/.bin/browserify -t coffeeify --extension='.coffee' -t ractivate --extension='.html' ./test | ./node_modules/.bin/browser-run -p 2222 | ./node_modules/.bin/faucet"
+		"test-browser": "echo 'Navigate to http://localhost:2222 to execute tests' && ./node_modules/.bin/browserify -t coffeeify --extension='.coffee' -t ractivate --extension='.html' ./test | ./node_modules/.bin/browser-run -p 2222 | ./node_modules/.bin/faucet",
+		"compile": "grunt build && ./node_modules/.bin/coffee ./bin/compile-template.coffee"
+	},
 	"keywords": [
 		"ractive",
 		"route",
