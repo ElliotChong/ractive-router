@@ -124,6 +124,16 @@ RouteContainer = Ractive.extend
 
 		@root.off "*.#{events.NAVIGATE} #{events.NAVIGATE}", @navigate
 
+	# Wrap all middleware in a finalized check for early exits
+	_wrapMiddleware: (p_middleware) ->
+		(p_context, p_next) =>
+			# If the current Ractive-Router instance has been finalized exit immediately
+			if p_context.instances[@_guid].finalized is true
+				return p_next()
+
+			p_middleware.apply @, arguments
+
+	# Update the router to a new location
 	navigate: (p_event, p_path) ->
 		if not p_path?
 			if not isString p_event
@@ -181,10 +191,27 @@ RouteContainer = Ractive.extend
 		page.show window.location.pathname + window.location.search + window.location.hash
 
 	addRoute: (p_path, p_descriptor) ->
+		# Support `final` or `isFinal` properties
+		p_descriptor.final ?= p_descriptor.isFinal
+		delete p_descriptor.isFinal
+
 		# PageJS will call these methods when the path is changed
 		middleware = [p_path]
 
-		middleware.push (p_context, p_next) ->
+		middleware.push (p_context, p_next) =>
+			# Store instance-level data on the Context
+			p_context.instances ?= {}
+			p_context.instances[@_guid] ?=
+				matches: 0
+				finalized: false
+
+			p_context.instances[@_guid].matches++
+
+			# When an instance's route has been finalized future Ractive-Router
+			# defined middleware will be skipped
+			if p_context.instances[@_guid].finalized is true
+				return p_next()
+
 			# Attach the `descriptor` to the context so that external
 			# middleware have access as well
 			p_context.routeDescriptor = p_descriptor
@@ -201,31 +228,38 @@ RouteContainer = Ractive.extend
 		instanceMiddleware = @get "middleware"
 		if isArray instanceMiddleware
 			for method in instanceMiddleware
-				middleware.push method.bind @
+				middleware.push @_wrapMiddleware method
+		else if isFunction instanceMiddleware
+			middleware.push @_wrapMiddleware instanceMiddleware
 
 		# Add any custom middleware in the format of `(p_context, p_next) ->`
 		if p_descriptor.middleware?
 			if isArray p_descriptor.middleware
 				# Iterate through the supplied middleware and bind `this` to the current scope
 				for method in p_descriptor.middleware
-					middleware.push method.bind @
+					middleware.push @_wrapMiddleware method
 
 			else if isFunction p_descriptor.middleware
-				middleware.push p_descriptor.middleware.bind @
+				middleware.push @_wrapMiddleware p_descriptor.middleware
 
 			else
 				throw new Error "Unknown middleware specified: #{p_descriptor.middleware}"
 
 		# Show the new content via Ractive
-		middleware.push (p_context) =>
+		middleware.push @_wrapMiddleware (p_context, p_next) ->
+			if p_descriptor.final is true
+				p_context.instances[@_guid].finalized = true
+
+			# Allow asynchronously loaded content to be fetched but not displayed
 			if p_context.preload is true or p_context.state.preload is true
-				return
+				return p_next()
 
 			component = p_context.component || p_context.routeDescriptor.component
 
 			if component?
 				@showContent component, p_context
 
+			p_next()
 
 		page.apply null, middleware
 
