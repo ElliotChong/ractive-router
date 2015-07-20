@@ -1,7 +1,7 @@
 test = require "tape"
 Ractive = require "ractive"
 RactiveRouter = require "../lib/"
-isBrowser = window? and not global?.process?
+isBrowser = window? and not window.process?
 
 TestRactive = Ractive.extend
 	template: "<ractive-router routes='{{routes}}' pageOptions='{{options}}'/>"
