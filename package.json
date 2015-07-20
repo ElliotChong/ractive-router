@@ -7,6 +7,9 @@
 		"Elliot Chong <code+ractive-router@elliotjameschong.com>"
 	],
 	"main": "index.js",
+	"scripts": {
+		"test": "./node_modules/.bin/coffee test | ./node_modules/.bin/faucet",
+		"test-browser": "echo 'Navigate to http://localhost:2222 to execute tests' && ./node_modules/.bin/browserify -t coffeeify --extension='.coffee' -t ractivate --extension='.html' ./test | ./node_modules/.bin/browser-run -p 2222 | ./node_modules/.bin/faucet"
 	"keywords": [
 		"ractive",
 		"route",
@@ -27,13 +30,20 @@
 		"page": "^1.6.3"
 	},
 	"devDependencies": {
+		"browser-run": "^1.0.1",
+		"browserify": "^11.0.0",
 		"coffee-script": "^1.9.3",
+		"coffeeify": "^1.1.0",
+		"faucet": "^0.0.1",
 		"grunt": "^0.4.5",
 		"grunt-contrib-coffee": "^0.12.0",
 		"grunt-conventional-changelog": "^1.1.0",
 		"grunt-contrib-copy": "^0.8.0",
 		"grunt-notify": "^0.4.1",
 		"jit-grunt": "^0.9.0",
-		"load-grunt-config": "^0.16.0"
+		"load-grunt-config": "^0.16.0",
+		"ractive": "*",
+		"ractivate": "^0.2.0",
+		"tape": "^4.0.0"
 	}
 }
