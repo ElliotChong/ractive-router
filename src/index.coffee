@@ -194,7 +194,7 @@ RouteContainer = Ractive.extend
 
 		# Attach custom middleware passed to the Ractive instance
 		instanceMiddleware = @get "middleware"
-		if instanceMiddleware
+		if isArray instanceMiddleware
 			for method in instanceMiddleware
 				middleware.push method.bind @
 
