@@ -69,6 +69,11 @@ RouteContainer = Ractive.extend
 		showContent: false
 
 	computed:
+		# The current path being processed
+		currentPath:
+			get: ->
+				return page?.current
+
 		scope:
 			get: ->
 				scope = @get "routeContext.scope"
