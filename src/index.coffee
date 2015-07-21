@@ -100,6 +100,8 @@ RouteContainer = Ractive.extend
 				return title
 
 	oninit: ->
+		@_super?.apply @, arguments
+
 		# Bail out if we're not in the DOM
 		if not window?
 			return
