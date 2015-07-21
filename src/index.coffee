@@ -67,6 +67,7 @@ RouteContainer = Ractive.extend
 		routes: undefined # Array
 		routeContext: undefined # Object
 		showContent: false
+		pageCallbacks: undefined # Array
 
 	computed:
 		# The current path being processed
@@ -105,6 +106,9 @@ RouteContainer = Ractive.extend
 
 		@_super?.apply @, arguments
 
+		# Initialize "complex" JS objects
+		@set "pageCallbacks", []
+
 		options = @get "pageOptions"
 		initializePage options
 
@@ -123,6 +127,18 @@ RouteContainer = Ractive.extend
 		@_super?.apply @, arguments
 
 		@root.off "*.#{events.NAVIGATE} #{events.NAVIGATE}", @navigate
+
+		callbacks = @get "pageCallbacks"
+
+		for callback in callbacks
+			index = page.callbacks.indexOf callback
+
+			if index is -1
+				throw new Error "Expected callback to exist in Page.js"
+				continue
+
+			# Remove callbacks which were added by this instance
+			page.callbacks.splice index, 1
 
 	# Wrap all middleware in a finalized check for early exits
 	_wrapMiddleware: (p_middleware) ->
@@ -265,7 +281,11 @@ RouteContainer = Ractive.extend
 
 			p_next()
 
+		initialLength = page.callbacks.length
 		page.apply null, middleware
+
+		# Keep a reference to the created callbacks in case of teardown later
+		@get("pageCallbacks").concat page.callbacks.slice initialLength, -1
 
 RouteContainer.events = events
 
