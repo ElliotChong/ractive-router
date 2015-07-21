@@ -8,6 +8,7 @@ merge = require "lodash/object/merge"
 once = require "lodash/function/once"
 page = undefined
 Ractive = require "ractive"
+Promise = Ractive.Promise
 
 # Ensure Page.js is only initialized once
 initializePage = do ->
@@ -171,28 +172,33 @@ RouteContainer = Ractive.extend
 		page.show p_path
 
 	showContent: (p_component, p_context) ->
-		if p_component isnt @components["route-content"]
+		isNewContent = true
+		promise = Promise.resolve()
 
+		if p_component isnt @components["route-content"]
 			# Hide the current content
-			@set "showContent", false
+			promise = promise.then @set "showContent", false
 
 			# Set the new route's context
-			@set "routeContext", p_context
+			promise = promise.then @set "routeContext", p_context
 
 			# Extend the component with a given scope if applicable
-			component = p_component
-			scope = @get "scope"
+			promise = promise.then new Promise (p_fulfill, p_reject) =>
+				component = p_component
+				scope = @get "scope"
 
-			if component.extend? and scope?
-				component = component.extend
-					data: ->
-						scope
+				if component.extend? and scope?
+					component = component.extend
+						data: ->
+							scope
 
-			# Assign the component as the current content
-			@components["route-content"] = component
+				# Assign the component as the current content
+				@components["route-content"] = component
+
+				p_fulfill()
 
 		else if p_context isnt @get "routeContext"
-			@set "routeContext", p_context
+			promise = promise.then @set "routeContext", p_context
 
 		else
 			isNewContent = false
@@ -205,13 +211,16 @@ RouteContainer = Ractive.extend
 				document.title = title
 
 		# Disable any loader animations
-		@set "isLoading", false
+		promise = promise.then @set "isLoading", false
 
 		# Show the newly set content
-		@set "showContent", true
+		promise = promise.then @set "showContent", true
 
-		if isNewContent isnt false
-			@fire events.CONTENT_CHANGED
+		promise.then new Promise (p_fulfill, p_reject) =>
+			if isNewContent isnt false
+				@fire events.CONTENT_CHANGED
+
+			p_fulfill isNewContent
 
 	preload: (p_path, p_context) ->
 		page.show p_path, merge({ preload: true }, p_context), true, false
