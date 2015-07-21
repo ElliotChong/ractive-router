@@ -147,7 +147,8 @@ RouteContainer = Ractive.extend
 	_wrapMiddleware: (p_middleware) ->
 		(p_context, p_next) =>
 			# If the current Ractive-Router instance has been finalized exit immediately
-			if p_context.instances[@_guid].finalized is true
+			instance = p_context.instances?[@_guid]
+			if not instance? or instance.finalized is true
 				return p_next()
 
 			p_middleware.apply @, arguments
