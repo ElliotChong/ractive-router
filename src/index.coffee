@@ -60,7 +60,7 @@ RouteContainer = Ractive.extend
 	template: require "./template.html"
 
 	data: ->
-		defaultTitle: ""
+		defaultTitle: undefined
 		isLoading: true
 		middleware: undefined # Array
 		pageOptions: undefined # Object
@@ -191,7 +191,10 @@ RouteContainer = Ractive.extend
 
 		# Set the document's title if it's available
 		if document?
-			document.title = @get "title"
+			title = @get "title"
+
+			if title?
+				document.title = title
 
 		# Disable any loader animations
 		@set "isLoading", false
