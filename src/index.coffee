@@ -171,23 +171,31 @@ RouteContainer = Ractive.extend
 		page.show p_path
 
 	showContent: (p_component, p_context) ->
-		# Hide the current content
-		@set "showContent", false
+		if p_component isnt @components["route-content"]
 
-		# Set the new route's context
-		@set "routeContext", p_context
+			# Hide the current content
+			@set "showContent", false
 
-		# Extend the component with a given scope if applicable
-		component = p_component
-		scope = @get "scope"
+			# Set the new route's context
+			@set "routeContext", p_context
 
-		if component.extend? and scope?
-			component = component.extend
-				data: ->
-					scope
+			# Extend the component with a given scope if applicable
+			component = p_component
+			scope = @get "scope"
 
-		# Assign the component as the current content
-		@components["route-content"] = component
+			if component.extend? and scope?
+				component = component.extend
+					data: ->
+						scope
+
+			# Assign the component as the current content
+			@components["route-content"] = component
+
+		else if p_context isnt @get "routeContext"
+			@set "routeContext", p_context
+
+		else
+			isNewContent = false
 
 		# Set the document's title if it's available
 		if document?
@@ -202,7 +210,8 @@ RouteContainer = Ractive.extend
 		# Show the newly set content
 		@set "showContent", true
 
-		@fire events.CONTENT_CHANGED
+		if isNewContent isnt false
+			@fire events.CONTENT_CHANGED
 
 	preload: (p_path, p_context) ->
 		page.show p_path, merge({ preload: true }, p_context), true, false
