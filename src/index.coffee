@@ -211,10 +211,10 @@ RouteContainer = Ractive.extend
 			@addRoute routeDescriptor.path, routeDescriptor
 
 		# Show the current location
-		if window?.location?
-			page.show window.location.pathname + window.location.search + window.location.hash
-		else if page.current?.length > 0
+		if page.current?.length > 0
 			page.show page.current
+		else if window?.location?
+			page.show window.location.pathname + window.location.search + window.location.hash
 
 	addRoute: (p_path, p_descriptor) ->
 		# Support `final` or `isFinal` properties
