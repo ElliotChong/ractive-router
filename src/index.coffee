@@ -116,6 +116,7 @@ RouteContainer = Ractive.extend
 		@observe "routes", @parseRoutes
 
 		# Attach a listener to the root Ractive instance for `navigate`
+		@navigate = @navigate.bind @
 		@root.on "*.#{events.NAVIGATE} #{events.NAVIGATE}", @navigate
 
 		# Immediately navigate to a specified route
