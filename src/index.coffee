@@ -160,6 +160,10 @@ RouteContainer = Ractive.extend
 			p_path = p_event
 			p_event = null
 
+		# If the current path has already been handled exit early
+		if p_path is @get "currentPath"
+			return
+
 		page.show p_path
 
 	showContent: (p_component, p_context) ->
