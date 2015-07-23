@@ -57,6 +57,13 @@ initializePage = do ->
 		# Initialize Page.js
 		page.start options
 
+showCurrent = ->
+	# Show the current location
+	if page.current?.length > 0
+		page.show page.current
+	else if window?.location?
+		page.show window.location.pathname + window.location.search + window.location.hash
+
 RouteContainer = Ractive.extend
 	template: require "./template.html"
 
@@ -232,11 +239,7 @@ RouteContainer = Ractive.extend
 		for routeDescriptor in p_routes
 			@addRoute routeDescriptor.path, routeDescriptor
 
-		# Show the current location
-		if page.current?.length > 0
-			page.show page.current
-		else if window?.location?
-			page.show window.location.pathname + window.location.search + window.location.hash
+		showCurrent()
 
 	addRoute: (p_path, p_descriptor) ->
 		# Support `final` or `isFinal` properties
