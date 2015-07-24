@@ -81,7 +81,7 @@ RouteContainer = Ractive.extend
 		# The current path being processed
 		currentPath:
 			get: ->
-				return page?.current
+				RouteContainer.currentPath()
 
 		scope:
 			get: ->
@@ -326,5 +326,8 @@ RouteContainer = Ractive.extend
 		@set "pageCallbacks", @get("pageCallbacks").concat page.callbacks.slice initialLength, -1
 
 RouteContainer.events = events
+
+RouteContainer.currentPath = ->
+	return page?.current
 
 module.exports = RouteContainer
