@@ -242,6 +242,12 @@ RouteContainer = Ractive.extend
 		showCurrent()
 
 	addRoute: (p_descriptor) ->
+		if not p_descriptor?
+			throw new Error "A descriptor is required to add a route."
+
+		if not p_descriptor.path? or p_descriptor.path.length is 0
+			throw new Error "`path` is a required property of a route descriptor."
+
 		# Support `final` or `isFinal` properties
 		p_descriptor.final ?= p_descriptor.isFinal
 		delete p_descriptor.isFinal
