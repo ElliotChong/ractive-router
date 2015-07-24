@@ -283,6 +283,22 @@ RouteContainer = Ractive.extend
 			# Attach the title
 			p_context.title = p_context.routeDescriptor.title
 
+			# Alias parameters - Useful when working with RegExp paths
+			# that contain capture groups
+			if p_context.routeDescriptor.params?
+				if isArray p_context.routeDescriptor.params
+					for param, index in p_context.routeDescriptor.params
+						if not isString param
+							continue
+
+						p_context.params[param] = p_context.params[index]
+				else if isPlainObject p_context.routeDescriptor.params
+					for key, value of p_context.routeDescriptor.params
+						if not isString value
+							continue
+
+						p_context.params[value] = p_context.params[key]
+
 			p_next()
 
 		# Attach custom middleware passed to the Ractive instance
