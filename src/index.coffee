@@ -357,7 +357,7 @@ RouteContainer = Ractive.extend
 		return callbacks
 
 	removeRoute: (p_descriptor) ->
-		if not p_descriptor._instances[@_guid]?
+		if not p_descriptor._instances?[@_guid]?
 			return
 
 		while p_descriptor._instances[@_guid].callbacks.length > 0
