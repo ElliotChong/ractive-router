@@ -57,6 +57,19 @@ initializePage = do ->
 		# Initialize Page.js
 		page.start options
 
+# Remove the specified callback from Page.js
+removeCallback = (p_callback) ->
+	if not page?
+		throw new Error "Page.js cannot have callbacks removed if it hasn't been initialized yet."
+
+	index = page.callbacks.indexOf p_callback
+
+	if index is -1
+		throw new Error "Expected callback to exist in Page.js"
+
+	# Remove callbacks which were added by this instance
+	page.callbacks.splice index, 1
+
 showCurrent = ->
 	# Show the current location
 	if page.current?.length > 0
@@ -139,17 +152,8 @@ RouteContainer = Ractive.extend
 
 		@root.off "*.#{events.NAVIGATE} #{events.NAVIGATE}", @navigate
 
-		callbacks = @get "pageCallbacks"
-
-		for callback in callbacks
-			index = page.callbacks.indexOf callback
-
-			if index is -1
-				throw new Error "Expected callback to exist in Page.js"
-				continue
-
-			# Remove callbacks which were added by this instance
-			page.callbacks.splice index, 1
+		for callback in @get "pageCallbacks"
+			removeCallback callback
 
 	# Wrap all middleware in a finalized check for early exits
 	_wrapMiddleware: (p_middleware) ->
