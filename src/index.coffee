@@ -323,7 +323,11 @@ RouteContainer = Ractive.extend
 		page.apply null, middleware
 
 		# Keep a reference to the created callbacks in case of teardown later
-		@set "pageCallbacks", @get("pageCallbacks").concat page.callbacks.slice initialLength, -1
+		callbacks = page.callbacks.slice initialLength, -1
+		@set "pageCallbacks", @get("pageCallbacks").concat callbacks
+
+		p_descriptor.callbacks = (p_descriptor.callbacks || []).concat callbacks
+		return callbacks
 
 RouteContainer.events = events
 
