@@ -234,12 +234,20 @@ RouteContainer = Ractive.extend
 	preload: (p_path, p_context) ->
 		page.show p_path, merge({ preload: true }, p_context), true, false
 
-	parseRoutes: (p_routes) ->
+	parseRoutes: (p_routes, p_oldRoutes) ->
+		p_oldRoutes ?= @get "routes"
+
+		# Remove the current routes before applying the new routes
+		if p_oldRoutes?.length > 0
+			for route in p_oldRoutes
+				@removeRoute route
+
+		# Exit early
 		if not isArray p_routes
 			return
 
-		for routeDescriptor in p_routes
-			@addRoute routeDescriptor
+		for route in p_routes
+			@addRoute route
 
 		showCurrent()
 
