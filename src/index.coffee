@@ -88,7 +88,6 @@ RouteContainer = Ractive.extend
 		routes: undefined # Array
 		routeContext: undefined # Object
 		showContent: false
-		pageCallbacks: undefined # Array
 
 	computed:
 		# The current path being processed
@@ -129,9 +128,6 @@ RouteContainer = Ractive.extend
 
 		@_super?.apply @, arguments
 
-		# Initialize "complex" JS objects
-		@set "pageCallbacks", []
-
 		options = @get "pageOptions"
 		initializePage options
 
@@ -152,8 +148,10 @@ RouteContainer = Ractive.extend
 
 		@root.off "*.#{events.NAVIGATE} #{events.NAVIGATE}", @navigate
 
-		for callback in @get "pageCallbacks"
-			removeCallback callback
+		routes = @get "routes"
+		if routes?.length > 0
+			for routeDescriptor in routes
+				@removeRoute routeDescriptor
 
 	# Wrap all middleware in a finalized check for early exits
 	_wrapMiddleware: (p_middleware) ->
@@ -344,10 +342,20 @@ RouteContainer = Ractive.extend
 
 		# Keep a reference to the created callbacks in case of teardown later
 		callbacks = page.callbacks.slice initialLength, -1
-		@set "pageCallbacks", @get("pageCallbacks").concat callbacks
 
-		p_descriptor.callbacks = (p_descriptor.callbacks || []).concat callbacks
+		p_descriptor._instances ?= {}
+		p_descriptor._instances[@_guid] ?= callbacks: []
+		p_descriptor._instances[@_guid].callbacks = p_descriptor._instances[@_guid].callbacks.concat callbacks
 		return callbacks
+
+	removeRoute: (p_descriptor) ->
+		if not p_descriptor._instances[@_guid]?
+			return
+
+		while p_descriptor._instances[@_guid].callbacks.length > 0
+			removeCallback p_descriptor._instances[@_guid].callbacks.shift()
+
+		delete p_descriptor._instances[@_guid]
 
 RouteContainer.events = events
 
