@@ -30,7 +30,8 @@
 	"homepage": "https://github.com/ElliotChong/ractive-router",
 	"dependencies": {
 		"lodash": "^3.10.0",
-		"page": "^1.6.3"
+		"page": "^1.6.3",
+		"qs": "^4.0.0"
 	},
 	"devDependencies": {
 		"browser-run": "^1.0.1",

@@ -7,6 +7,7 @@ isString = require "lodash/lang/isString"
 merge = require "lodash/object/merge"
 once = require "lodash/function/once"
 page = undefined
+qs = require "qs"
 Ractive = require "ractive"
 Promise = Ractive.Promise
 
@@ -282,6 +283,13 @@ RouteContainer = Ractive.extend
 			# defined middleware will be skipped
 			if p_context.instances[@_guid].finalized is true
 				return p_next()
+
+			# Parse the query string
+			if p_context.querystring?.length > 0
+				if not p_context.query?
+					p_context.query = qs.parse p_context.querystring
+			else
+				p_context.query = {}
 
 			# Attach the `descriptor` to the context so that external
 			# middleware have access as well
