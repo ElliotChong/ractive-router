@@ -234,7 +234,11 @@ RouteContainer = Ractive.extend
 	preload: (p_path, p_context) ->
 		page.show p_path, merge({ preload: true }, p_context), true, false
 
-	parseRoutes: (p_routes, p_oldRoutes) ->
+	parseRoutes: (p_routes, p_oldRoutes, p_keypath) ->
+		# An update occurred that wasn't to the primary `routes` Array
+		if p_keypath? and p_keypath isnt "routes"
+			return
+
 		p_oldRoutes ?= @get "routes"
 
 		# Remove the current routes before applying the new routes
