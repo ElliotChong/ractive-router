@@ -237,17 +237,17 @@ RouteContainer = Ractive.extend
 			return
 
 		for routeDescriptor in p_routes
-			@addRoute routeDescriptor.path, routeDescriptor
+			@addRoute routeDescriptor
 
 		showCurrent()
 
-	addRoute: (p_path, p_descriptor) ->
+	addRoute: (p_descriptor) ->
 		# Support `final` or `isFinal` properties
 		p_descriptor.final ?= p_descriptor.isFinal
 		delete p_descriptor.isFinal
 
 		# PageJS will call these methods when the path is changed
-		middleware = [p_path]
+		middleware = [p_descriptor.path]
 
 		middleware.push (p_context, p_next) =>
 			# Store instance-level data on the Context
