@@ -296,7 +296,8 @@ RouteContainer = Ractive.extend
 			p_context.routeDescriptor = p_descriptor
 
 			# Attach the scope
-			p_context.scope = p_context.routeDescriptor.scope
+			if p_context.routeDescriptor.scope?
+				p_context.scope = p_context.routeDescriptor.scope
 
 			# Attach the title
 			p_context.title = p_context.routeDescriptor.title
