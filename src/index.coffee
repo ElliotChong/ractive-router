@@ -300,7 +300,8 @@ RouteContainer = Ractive.extend
 				p_context.scope = p_context.routeDescriptor.scope
 
 			# Attach the title
-			p_context.title = p_context.routeDescriptor.title
+			if p_context.routeDescriptor.title?
+				p_context.title = p_context.routeDescriptor.title
 
 			# Alias parameters - Useful when working with RegExp paths
 			# that contain capture groups
