@@ -13,16 +13,16 @@ TestRactive = Ractive.extend
 		@fire RactiveRouter.events.NAVIGATE, p_path
 
 # Global Tests
-test "RactiveRouter's events are defined", (p_assert) ->
-	p_assert.ok RactiveRouter.events
-	p_assert.ok RactiveRouter.events.NAVIGATE
-	p_assert.ok RactiveRouter.events.CONTENT_CHANGED
+test "RactiveRouter's events are defined", (p_test) ->
+	p_test.ok RactiveRouter.events
+	p_test.ok RactiveRouter.events.NAVIGATE
+	p_test.ok RactiveRouter.events.CONTENT_CHANGED
 
-	p_assert.end()
+	p_test.end()
 
 # Browser-Centric Tests
 if isBrowser
-	test "Content is displayed", (p_assert) ->
+	test "Content is displayed", (p_test) ->
 		ractive = new TestRactive
 			data:
 				routes: [
@@ -33,6 +33,6 @@ if isBrowser
 					}
 				]
 
-		p_assert.equal ractive.toHTML(), "foo"
+		p_test.equal ractive.toHTML(), "foo"
 
-		p_assert.end()
+		p_test.end()
