@@ -98,15 +98,20 @@ RouteContainer = Ractive.extend
 
 		scope:
 			get: ->
-				scope = @get "routeContext.instances.#{@_guid}.scope"
+				scopes = @get "routeContext.instances.#{@_guid}.scopes"
 
-				if isFunction scope
-					scope = scope.bind(@)()
+				if scopes.length is 0
+					return undefined
 
-				if not isPlainObject scope
-					return
+				scopes = for scope in scopes
+					if isFunction scope
+						scope.call @
+					if isPlainObject scope
+						scope
 
-				return scope
+				scopes.unshift {}
+				
+				merge.apply undefined, scopes
 
 		title:
 			get: ->
@@ -276,6 +281,7 @@ RouteContainer = Ractive.extend
 			p_context.instances[@_guid] ?=
 				matches: 0
 				finalized: false
+				scopes: []
 
 			p_context.instances[@_guid].matches++
 
@@ -296,8 +302,8 @@ RouteContainer = Ractive.extend
 			p_context.routeDescriptor = p_descriptor
 
 			# Attach the scope
-			if p_context.routeDescriptor.scope?
-				p_context.instances[@_guid].scope = merge {}, p_context.instances[@_guid].scope, p_context.routeDescriptor.scope
+			if p_context.routeDescriptor.scopes?
+				p_context.instances[@_guid].scopes.push p_context.routeDescriptor.scope
 
 			# Attach the title
 			if p_context.routeDescriptor.title?
