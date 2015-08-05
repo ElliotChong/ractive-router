@@ -105,9 +105,12 @@ RouteContainer = Ractive.extend
 
 				scopes = for scope in scopes
 					if isFunction scope
-						scope.call @
-					if isPlainObject scope
-						scope
+						scope = scope.call @
+
+					if not isPlainObject scope
+						continue
+
+					scope
 
 				scopes.unshift {}
 
