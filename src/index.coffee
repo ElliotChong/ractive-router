@@ -98,7 +98,7 @@ RouteContainer = Ractive.extend
 
 		scope:
 			get: ->
-				scope = @get "routeContext.scope"
+				scope = @get "routeContext.instances.#{@_guid}.scope"
 
 				if isFunction scope
 					scope = scope.bind(@)()
@@ -297,7 +297,7 @@ RouteContainer = Ractive.extend
 
 			# Attach the scope
 			if p_context.routeDescriptor.scope?
-				p_context.scope = p_context.routeDescriptor.scope
+				p_context.instances[@_guid].scope = merge {}, p_context.instances[@_guid].scope, p_context.routeDescriptor.scope
 
 			# Attach the title
 			if p_context.routeDescriptor.title?
