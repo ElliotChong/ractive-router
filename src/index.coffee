@@ -110,7 +110,7 @@ RouteContainer = Ractive.extend
 						scope
 
 				scopes.unshift {}
-				
+
 				merge.apply undefined, scopes
 
 		title:
@@ -302,7 +302,7 @@ RouteContainer = Ractive.extend
 			p_context.routeDescriptor = p_descriptor
 
 			# Attach the scope
-			if p_context.routeDescriptor.scopes?
+			if p_context.routeDescriptor.scope?
 				p_context.instances[@_guid].scopes.push p_context.routeDescriptor.scope
 
 			# Attach the title
