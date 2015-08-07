@@ -356,6 +356,7 @@ RouteContainer = Ractive.extend
 		middleware.push @_wrapMiddleware (p_context, p_next) ->
 			if p_descriptor.final is true
 				p_context.instances[@_guid].finalized = true
+				p_context.handled = true
 
 			# Allow asynchronously loaded content to be fetched but not displayed
 			if p_context.preload is true or p_context.state.preload is true
