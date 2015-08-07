@@ -4,6 +4,7 @@ isEqual = require "lodash/lang/isEqual"
 isFunction = require "lodash/lang/isFunction"
 isPlainObject = require "lodash/lang/isPlainObject"
 isString = require "lodash/lang/isString"
+assign = require "lodash/object/assign"
 merge = require "lodash/object/merge"
 once = require "lodash/function/once"
 page = undefined
@@ -78,6 +79,28 @@ showCurrent = ->
 	else if window?.location?
 		page.show window.location.pathname + window.location.search + window.location.hash
 
+resolveScope = (p_scopes) ->
+	if not p_scopes?
+		return undefined
+
+	if not isArray p_scopes
+		p_scopes = [p_scopes]
+	else if p_scopes.length is 0
+		return undefined
+
+	scopes = for scope in p_scopes
+		if isFunction scope
+			scope = scope.call @
+
+		if not isPlainObject scope
+			continue
+
+		scope
+
+	scopes.unshift {}
+
+	assign.apply undefined, scopes
+
 RouteContainer = Ractive.extend
 	template: require "./template.html"
 
@@ -98,23 +121,12 @@ RouteContainer = Ractive.extend
 
 		scope:
 			get: ->
-				scopes = @get "routeContext.instances.#{@_guid}.scopes"
+				scopes = @get "scopes"
+				resolveScope.call @, scopes
 
-				if scopes.length is 0
-					return undefined
-
-				scopes = for scope in scopes
-					if isFunction scope
-						scope = scope.call @
-
-					if not isPlainObject scope
-						continue
-
-					scope
-
-				scopes.unshift {}
-
-				merge.apply undefined, scopes
+		scopes:
+			get: ->
+				@get "routeContext.instances.#{@_guid}.scopes"
 
 		title:
 			get: ->
@@ -203,12 +215,17 @@ RouteContainer = Ractive.extend
 			# Extend the component with a given scope if applicable
 			promise = promise.then new Promise (p_fulfill, p_reject) =>
 				component = p_component
-				scope = @get "scope"
+				scopes = @get "scopes"
 
-				if component.extend? and scope?
+				if component.extend? and scopes?.length > 0
 					component = component.extend
-						data: ->
-							scope
+						oninit: ->
+							@_super?.apply @, arguments
+
+							scope = resolveScope.call @, scopes
+
+							if scope?
+								@set scope
 
 				# Assign the component as the current content
 				@components["route-content"] = component
