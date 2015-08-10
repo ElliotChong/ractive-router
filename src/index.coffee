@@ -296,6 +296,16 @@ RouteContainer = Ractive.extend
 		middleware = [p_descriptor.path]
 
 		middleware.push (p_context, p_next) =>
+			p_context.finalize ?= (p_instance) ->
+				if not p_instance?
+					throw new Error "`instance` is a required parameter for finalize()"
+
+				if p_instance._guid?
+					p_instance = p_instance._guid
+
+				p_context.instances[p_instance].finalized = true
+				p_context.handled = true
+
 			# Store instance-level data on the Context
 			p_context.instances ?= {}
 			p_context.instances[@_guid] ?=
@@ -372,8 +382,7 @@ RouteContainer = Ractive.extend
 		# Show the new content via Ractive
 		middleware.push @_wrapMiddleware (p_context, p_next) ->
 			if p_descriptor.final is true
-				p_context.instances[@_guid].finalized = true
-				p_context.handled = true
+				p_context.finalize @_guid
 
 			# Allow asynchronously loaded content to be fetched but not displayed
 			if p_context.preload is true or p_context.state.preload is true
