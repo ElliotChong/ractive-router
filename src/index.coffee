@@ -265,7 +265,8 @@ RouteContainer = Ractive.extend
 		if p_keypath? and p_keypath isnt "routes"
 			return
 
-		p_oldRoutes ?= @get "routes"
+		if not p_oldRoutes? and not p_keypath?
+			p_oldRoutes ?= @get "routes"
 
 		# Remove the current routes before applying the new routes
 		if p_oldRoutes?.length > 0
