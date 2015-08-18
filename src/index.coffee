@@ -416,4 +416,6 @@ Router.events = events
 Router.currentPath = ->
 	return page?.current
 
+Ractive.components["router"] ?= Router
+
 module.exports = Router
