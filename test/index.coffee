@@ -15,7 +15,7 @@ cleanupRactive = ->
 		ractive.teardown()
 		document.body.removeChild element
 
-TestRactive = Ractive.extend
+BaseTester = Ractive.extend
 	template: "<router routes='{{routes}}' pageOptions='{{options}}'/>"
 
 	data: ->
@@ -49,7 +49,7 @@ if isBrowser
 		return div
 
 	test "Content is displayed", (p_assert) ->
-		ractive = new TestRactive
+		ractive = new BaseTester
 			el: createElement()
 			data: ->
 				routes: [
@@ -66,7 +66,7 @@ if isBrowser
 		p_assert.end()
 
 	test "Nested routers", (p_assert) ->
-		ractive = new TestRactive
+		ractive = new BaseTester
 			el: createElement()
 			template: "Page: <router routes='{{routes}}' pageOptions='{{options}}'/>"
 			data: ->
@@ -94,7 +94,7 @@ if isBrowser
 		p_assert.end()
 
 	test "Multiple nested routers", (p_assert) ->
-		ractive = new TestRactive
+		ractive = new BaseTester
 			el: createElement()
 			template: "Page: <router routes='{{routes}}' pageOptions='{{options}}'/>"
 			data: ->
@@ -131,7 +131,7 @@ if isBrowser
 	test "Nested routers don't call the parent's routes on instantiation", (p_assert) ->
 		parentMiddlewareCalled = 0
 
-		ractive = new TestRactive
+		ractive = new BaseTester
 			el: createElement()
 			template: "Page: <router routes='{{routes}}' pageOptions='{{options}}'/>"
 			data: ->
@@ -164,7 +164,7 @@ if isBrowser
 		p_assert.end()
 
 	test "Navigating to other routes", (p_assert) ->
-		ractive = new TestRactive
+		ractive = new BaseTester
 			el: createElement()
 			data: ->
 				routes: [
@@ -194,7 +194,7 @@ if isBrowser
 		childInitialized = 0
 		childRendered = 0
 
-		ractive = new TestRactive
+		ractive = new BaseTester
 			el: createElement()
 			name: "Page (Root) Instance"
 			template: "Page: <router routes='{{routes}}' pageOptions='{{options}}'/>"
