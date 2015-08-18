@@ -266,16 +266,16 @@ Router = Ractive.extend
 
 				component = component.extend
 					oninit: ->
-						@_super?.apply @, arguments
-
 						if scopes?.length > 0
 							@applyScope @resolveScope scopes
 
-					onunrender: ->
 						@_super?.apply @, arguments
 
+					onunrender: ->
 						@scope = undefined
 						scopes = undefined
+
+						@_super?.apply @, arguments
 
 					resolveScope: (p_scopes) ->
 						resolveScope.call @, p_scopes
