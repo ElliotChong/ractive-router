@@ -260,8 +260,9 @@ Router = Ractive.extend
 		if p_keypath? and p_keypath isnt "routes"
 			return
 
-		if not p_oldRoutes? and not p_keypath?
-			p_oldRoutes ?= @get "routes"
+		# `parseRoutes` wasn't called via observer
+		if not p_keypath? and not p_oldRoutes?
+			p_oldRoutes = @get "routes"
 
 		# Remove the current routes before applying the new routes
 		if p_oldRoutes?.length > 0
