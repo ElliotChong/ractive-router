@@ -2,7 +2,7 @@
 	"name": "ractive-router",
 	"description": "Display Ractive components based on route.",
 	"license": "MIT",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"author": [
 		"Elliot Chong <code+ractive-router@elliotjameschong.com>"
 	],
