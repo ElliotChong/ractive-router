@@ -101,7 +101,7 @@ resolveScope = (p_scopes) ->
 
 	assign.apply undefined, scopes
 
-RouteContainer = Ractive.extend
+Router = Ractive.extend
 	template: require "./template.html"
 
 	data: ->
@@ -114,11 +114,6 @@ RouteContainer = Ractive.extend
 		showContent: false
 
 	computed:
-		# The current path being processed
-		currentPath:
-			get: ->
-				RouteContainer.currentPath()
-
 		scope:
 			get: ->
 				scopes = @get "scopes"
@@ -196,7 +191,7 @@ RouteContainer = Ractive.extend
 			p_event = null
 
 		# If the current path has already been handled exit early
-		if p_path is @get "currentPath"
+		if p_path is Router.currentPath()
 			return
 
 		page.show p_path
@@ -416,9 +411,9 @@ RouteContainer = Ractive.extend
 
 		delete p_descriptor._instances[@_guid]
 
-RouteContainer.events = events
+Router.events = events
 
-RouteContainer.currentPath = ->
+Router.currentPath = ->
 	return page?.current
 
-module.exports = RouteContainer
+module.exports = Router
