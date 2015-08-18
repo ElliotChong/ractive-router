@@ -394,6 +394,13 @@ Router = Ractive.extend
 		initialLength = page.callbacks.length
 		page.apply null, middleware
 		page "*", (p_context, p_next) =>
+			if p_context?.instances?[@_guid]?.finalized isnt true
+				contentShown = @get "showContent"
+				@set "showContent", false
+
+				if contentShown is true
+					@fire events.CONTENT_CHANGED
+
 			if globalOptions.unhandledRedirect isnt true
 				p_context.handled = true
 
