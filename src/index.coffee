@@ -265,7 +265,7 @@ Router = Ractive.extend
 						if scopes?.length > 0
 							@applyScope @resolveScope scopes
 
-					onteardown: ->
+					onunrender: ->
 						@_super?.apply @, arguments
 
 						@scope = undefined
