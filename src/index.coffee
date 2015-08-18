@@ -263,7 +263,7 @@ Router = Ractive.extend
 						@_super?.apply @, arguments
 
 						if scopes?.length > 0
-							@applyScopes @resolveScope scopes
+							@applyScope @resolveScope scopes
 
 					onteardown: ->
 						@_super?.apply @, arguments
