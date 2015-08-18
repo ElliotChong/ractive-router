@@ -4,6 +4,7 @@ isEqual = require "lodash/lang/isEqual"
 isFunction = require "lodash/lang/isFunction"
 isPlainObject = require "lodash/lang/isPlainObject"
 isString = require "lodash/lang/isString"
+clone = require "lodash/lang/clone"
 assign = require "lodash/object/assign"
 merge = require "lodash/object/merge"
 once = require "lodash/function/once"
@@ -13,16 +14,18 @@ Ractive = require "ractive"
 Promise = Ractive.Promise
 
 # Ensure Page.js is only initialized once
+globalOptions = undefined
+
 initializePage = do ->
 	isInitialized = false
-	options = undefined
+	passedOptions = undefined
 
 	(p_options) ->
 		if isInitialized is true
-			if Ractive.DEBUG is true and p_options? and not isEqual options, p_options
+			if Ractive.DEBUG is true and p_options? and not isEqual passedOptions, p_options
 				console.warn "Page.js was initialized multiple times with different options"
 				console.warn "In-Use Options:"
-				console.warn options
+				console.warn passedOptions
 				console.warn "Canceled Options:"
 				console.warn p_options
 			return
@@ -30,54 +33,87 @@ initializePage = do ->
 		page = require "page"
 
 		isInitialized = true
-		options = p_options
+		passedOptions = p_options
+		globalOptions = if p_options? then clone(p_options) else undefined
 
-		if options?
+		if globalOptions?
 			# Page.js doesn't have popState camel-cased for some reason
-			options.popstate ?= options.popState
-			delete options.popState
+			if globalOptions.popState? and not globalOptions.popstate?
+				globalOptions.popstate = globalOptions.popState
 
-			# Page.js's `dispatch` can be a bit ambiguous, so proxying the more
-			# descriptive `initialDispatch` to the `dispatch` property
-			options.dispatch ?= options.initialDispatch
-			delete options.initialDispatch
+			delete globalOptions.popState
+
+			if globalOptions.pushState? and not globalOptions.pushstate?
+				globalOptions.pushstate = globalOptions.pushState
+
+			delete globalOptions.pushState
 
 			# Override Page.js's default pushState functionality
 			show = page.show.bind page
 			page.show = (p_path, p_state, p_dispatch, p_push) ->
-				show p_path, p_state, p_dispatch, p_push || options.pushState || options.pushstate
-
-			# Always disable `dispatch` when an initial route is set since that
-			# will be navigated to immediately
-			if isString options.initialRoute
-				options.dispatch = false
+				show p_path, p_state, p_dispatch, p_push || globalOptions.pushstate
 
 			# Set the router's base path when determining routes
-			if isString options.base
-				page.base options.base
+			if isString globalOptions.base
+				page.base globalOptions.base
+		else
+			globalOptions = {}
+
+		# Default to disabling `dispatch` since the routes haven't been initialized yet
+		globalOptions.dispatch = false
 
 		# Initialize Page.js
-		page.start options
+		page.start globalOptions
+
+# Override Page.js's `dispatch` befhavior to optionall accept an
+# Array of callbacks
+selectiveDispatch = (p_context, p_callbacks) ->
+	i = 0
+	j = 0
+	p_callbacks ?= page.callbacks
+
+	nextEnter = ->
+		method = p_callbacks[i++]
+
+		if p_context.path isnt page.current
+			p_context.handled = false
+			return
+
+		if not method?
+			return
+
+		method p_context, nextEnter
+
+	nextEnter()
 
 # Remove the specified callback from Page.js
-removeCallback = (p_callback) ->
-	if not page?
-		throw new Error "Page.js cannot have callbacks removed if it hasn't been initialized yet."
+removeCallback = (p_callback, p_collection) ->
+	if not p_collection?
+		throw new Error "`collection` is a required parameter."
 
-	index = page.callbacks.indexOf p_callback
+	index = p_collection.indexOf p_callback
 
 	if index is -1
-		throw new Error "Expected callback to exist in Page.js"
+		throw new Error "Expected callback to exist in collection"
 
 	# Remove callbacks which were added by this instance
-	page.callbacks.splice index, 1
+	p_collection.splice index, 1
 
-showCurrent = ->
+processPath = (p_path, p_callbacks) ->
+	if not p_callbacks? and isArray p_path
+		p_callbacks = p_path
+		p_path = undefined
+
 	# Show the current location
-	if page.current?.length > 0
-		page.show page.current
+	p_path ?= if page.current?.length > 0
+		page.current
 	else if window?.location?
-		page.show window.location.pathname + window.location.search + window.location.hash
+		window.location.pathname + window.location.search + window.location.hash
+	else
+		"/"
+
+	context = new page.Context p_path
+	selectiveDispatch.call page, context, p_callbacks
 
 resolveScope = (p_scopes) ->
 	if not p_scopes?
@@ -111,6 +147,7 @@ Router = Ractive.extend
 		pageOptions: undefined # Object
 		routes: undefined # Array
 		routeContext: undefined # Object
+		currentComponent: undefined # Function
 		showContent: false
 
 	computed:
@@ -130,7 +167,7 @@ Router = Ractive.extend
 				if isFunction title
 					title = title.bind(@)()
 
-				if not isString title
+				if not isString(title) or title?.length is 0
 					return @get "defaultTitle"
 
 				return title
@@ -198,40 +235,84 @@ Router = Ractive.extend
 
 	showContent: (p_component, p_context) ->
 		isNewContent = true
+		p_context.handled = true
 		promise = Promise.resolve()
 
-		if p_component isnt @components["route-content"]
+		# If the new component is different from the currently set component
+		# then initialize the new component
+		if p_component isnt @get "currentComponent"
 			# Hide the current content
 			promise = promise.then @set "showContent", false
 
 			# Set the new route's context
 			promise = promise.then @set "routeContext", p_context
 
+			# Store the original component
+			promise = promise.then @set "currentComponent", p_component
+
 			# Extend the component with a given scope if applicable
 			promise = promise.then new Promise (p_fulfill, p_reject) =>
-				component = p_component
+				component = @get "currentComponent"
 				scopes = @get "scopes"
 
-				if component.extend? and scopes?.length > 0
-					component = component.extend
-						oninit: ->
-							@_super?.apply @, arguments
+				if not component.extend?
+					return p_reject new Error "`component` didn't have the required method `extend`"
 
-							scope = resolveScope.call @, scopes
+				component = component.extend
+					oninit: ->
+						@_super?.apply @, arguments
 
-							if scope?
-								@set scope
+						if scopes?.length > 0
+							@applyScopes @resolveScope scopes
+
+					onteardown: ->
+						@_super?.apply @, arguments
+
+						@scope = undefined
+						scopes = undefined
+
+					resolveScope: (p_scopes) ->
+						resolveScope.call @, p_scopes
+
+					applyScope: (p_scope) ->
+						@reset()
+						@scope = p_scope
+
+						if p_scope?
+							@set p_scope
 
 				# Assign the component as the current content
 				@components["route-content"] = component
 
 				p_fulfill()
 
-		else if p_context isnt @get "routeContext"
-			promise = promise.then @set "routeContext", p_context
-
+		# If the currently rendered component is the same as the new component
+		# then instead of re-initializing it check if the scope has changed
+		# and if so then apply it to the component
 		else
 			isNewContent = false
+
+			if @get("showContent") is false
+				promise = promise.then @set "showContent", true
+				isNewContent = true
+
+			# Set the new context
+			if p_context isnt @get "routeContext"
+				promise = promise.then @set "routeContext", p_context
+
+			promise = promise.then new Promise (p_fulfill, p_reject) =>
+				instance = @findComponent "route-content"
+
+				if not instance?
+					return p_reject new Error "A `route-content` instance wasn't found."
+
+				scope = instance.resolveScope @get "scopes"
+
+				if not isEqual scope, instance.scope
+					instance.applyScope scope
+					isNewContent = true
+
+				p_fulfill()
 
 		# Set the document's title if it's available
 		if document?
@@ -241,10 +322,12 @@ Router = Ractive.extend
 				document.title = title
 
 		# Disable any loader animations
-		promise = promise.then @set "isLoading", false
+		if @get("isLoading") is true
+			promise = promise.then @set "isLoading", false
 
 		# Show the newly set content
-		promise = promise.then @set "showContent", true
+		if @get("showContent") is false
+			promise = promise.then @set "showContent", true
 
 		promise.then new Promise (p_fulfill, p_reject) =>
 			if isNewContent isnt false
@@ -273,10 +356,28 @@ Router = Ractive.extend
 		if not isArray p_routes
 			return
 
+		callbacks = []
 		for route in p_routes
-			@addRoute route
+			routeCallbacks = @addRoute route
 
-		showCurrent()
+			if isArray routeCallbacks
+				callbacks = callbacks.concat routeCallbacks
+
+		@set "callbacks", callbacks
+
+		path = page.current
+
+		# If `page.show` hasn't been called yet use that method, otherwise
+		# just process the newly generated routes
+		if not path? or path.length is 0
+			path = if window?.location?
+				window.location.pathname + window.location.search + window.location.hash
+			else
+				"/"
+
+			page.show path
+		else
+			processPath path, callbacks
 
 	addRoute: (p_descriptor) ->
 		if not p_descriptor?
@@ -420,7 +521,8 @@ Router = Ractive.extend
 			return
 
 		while p_descriptor._instances[@_guid].callbacks.length > 0
-			removeCallback p_descriptor._instances[@_guid].callbacks.shift()
+			callback = p_descriptor._instances[@_guid].callbacks.shift()
+			removeCallback callback, page.callbacks
 
 		delete p_descriptor._instances[@_guid]
 
