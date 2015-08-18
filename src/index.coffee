@@ -393,6 +393,11 @@ Router = Ractive.extend
 
 		initialLength = page.callbacks.length
 		page.apply null, middleware
+		page "*", (p_context, p_next) =>
+			if globalOptions.unhandledRedirect isnt true
+				p_context.handled = true
+
+			p_next()
 
 		# Keep a reference to the created callbacks in case of teardown later
 		callbacks = page.callbacks.slice initialLength
