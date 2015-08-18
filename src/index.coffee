@@ -159,7 +159,7 @@ Router = Ractive.extend
 			@navigate options.initialRoute
 
 	# Remove listeners attached to `this.root`
-	onteardown: ->
+	onunrender: ->
 		@_super?.apply @, arguments
 
 		@root.off "*.#{events.NAVIGATE} #{events.NAVIGATE}", @navigate
