@@ -307,3 +307,32 @@ if isBrowser
 		cleanupRactive ractive
 		p_assert.end()
 
+	test "Defining scope as a Function", (p_assert) ->
+		ractive = new BaseTester
+			el: createElement()
+			template: "Page: <router routes='{{routes}}' pageOptions='{{options}}'/>"
+			data: ->
+				routes: [
+					{
+						path: /\/?test\/?(.*?)$/
+						component: Ractive.extend
+							template: "Sub-page: <router routes='{{routes}}'/>"
+							data: ->
+								routes: [
+									path: "/test/foo"
+									scope: ->
+										test: "bar"
+									component: Ractive.extend
+										name: "/test/foo Instance"
+										template: "{{callout}} {{test}} :)"
+										data: ->
+											callout: "foo"
+								]
+					}
+				]
+
+		ractive.navigate "/test/foo"
+		p_assert.equal ractive.toHTML(), "Page: Sub-page: foo bar :)", "toHTML()"
+
+		cleanupRactive ractive
+		p_assert.end()
