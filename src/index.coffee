@@ -395,7 +395,7 @@ Router = Ractive.extend
 		page.apply null, middleware
 
 		# Keep a reference to the created callbacks in case of teardown later
-		callbacks = page.callbacks.slice initialLength, -1
+		callbacks = page.callbacks.slice initialLength
 
 		p_descriptor._instances ?= {}
 		p_descriptor._instances[@_guid] ?= callbacks: []
