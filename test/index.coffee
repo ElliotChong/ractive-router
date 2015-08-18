@@ -355,6 +355,35 @@ if isBrowser
 		cleanupRactive ractive
 		p_assert.end()
 
+	test "Data changes that occur in `oninit` are not overwritten when scope is present and navigation occurs", (p_assert) ->
+		ractive = new BaseTester
+			el: createElement()
+			data: ->
+				routes: [
+					{
+						path: "/"
+						scope: ->
+							scopeValue: "scoped!"
+						component: Ractive.extend
+							template: "{{dynamicValue}} {{scopeValue}}"
+							data: ->
+								dynamicValue: "bar"
+							oninit: ->
+								@_super?.apply @, arguments
+
+								@set "dynamicValue", "foo"
+					}
+				]
+
+		p_assert.equal ractive.toHTML(), "foo scoped!"
+		ractive.navigate "/foo"
+		p_assert.equal ractive.toHTML(), ""
+		ractive.navigate "/"
+		p_assert.equal ractive.toHTML(), "foo scoped!"
+
+		cleanupRactive ractive
+		p_assert.end()
+
 	test "Defining scope as a Function", (p_assert) ->
 		ractive = new BaseTester
 			el: createElement()
@@ -381,6 +410,16 @@ if isBrowser
 
 		ractive.navigate "/test/foo"
 		p_assert.equal ractive.toHTML(), "Page: Sub-page: foo bar :)", "toHTML()"
+
+		cleanupRactive ractive
+		p_assert.end()
+
+	test.skip "Stacked scopes", (p_assert) ->
+
+		cleanupRactive ractive
+		p_assert.end()
+
+	test.skip "Route RegEx", (p_assert) ->
 
 		cleanupRactive ractive
 		p_assert.end()
