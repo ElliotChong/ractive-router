@@ -377,14 +377,14 @@ Router = Ractive.extend
 
 		# Show the new content via Ractive
 		middleware.push @_wrapMiddleware (p_context, p_next) ->
-			if p_descriptor.final is true
+			component = p_context.component || p_context.routeDescriptor.component
+
+			if p_descriptor.final is true or component?
 				p_context.finalize @_guid
 
 			# Allow asynchronously loaded content to be fetched but not displayed
 			if p_context.preload is true or p_context.state.preload is true
 				return p_next()
-
-			component = p_context.component || p_context.routeDescriptor.component
 
 			if component?
 				@showContent component, p_context
