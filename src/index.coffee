@@ -520,9 +520,11 @@ Router = Ractive.extend
 		if not p_descriptor._instances?[@_guid]?
 			return
 
+		callbacks = @get "callbacks"
 		while p_descriptor._instances[@_guid].callbacks.length > 0
 			callback = p_descriptor._instances[@_guid].callbacks.shift()
 			removeCallback callback, page.callbacks
+			removeCallback callback, callbacks
 
 		delete p_descriptor._instances[@_guid]
 
