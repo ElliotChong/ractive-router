@@ -149,6 +149,7 @@ Router = Ractive.extend
 		routeContext: undefined # Object
 		currentComponent: undefined # Function
 		showContent: false
+		finalizeCallback: undefined # Function
 
 	computed:
 		scope:
@@ -205,6 +206,11 @@ Router = Ractive.extend
 		if routes?.length > 0
 			for routeDescriptor in routes
 				@removeRoute routeDescriptor
+
+		finalizeCallback = @get "finalizeCallback"
+		if finalizeCallback?
+			removeCallback finalizeCallback, page.callbacks
+			removeCallback finalizeCallback, @get "callbacks"
 
 	# Wrap all middleware in a finalized check for early exits
 	_wrapMiddleware: (p_middleware) ->
@@ -363,7 +369,32 @@ Router = Ractive.extend
 			if isArray routeCallbacks
 				callbacks = callbacks.concat routeCallbacks
 
+		finalizeCallback = @get "finalizeCallback"
+		if finalizeCallback?
+			removeCallback finalizeCallback, page.callbacks
+			page.callbacks.push finalizeCallback
+		else
+			# Add a final route that hides an unfinalized instance
+			page "*", (p_context, p_next) =>
+				if p_context?.instances?[@_guid]?.finalized isnt true
+					contentShown = @get "showContent"
+					@set "showContent", false
+
+					if contentShown is true
+						@fire events.CONTENT_CHANGED
+
+				if globalOptions.unhandledRedirect isnt true
+					p_context.handled = true
+
+				p_next()
+
+			finalizeCallback = page.callbacks.slice(-1)[0]
+			@set "finalizeCallback", finalizeCallback
+
+		callbacks.push finalizeCallback
+
 		@set "callbacks", callbacks
+		@set "finalizeCallback", finalizeCallback
 
 		path = page.current
 
@@ -495,18 +526,6 @@ Router = Ractive.extend
 
 		initialLength = page.callbacks.length
 		page.apply null, middleware
-		page "*", (p_context, p_next) =>
-			if p_context?.instances?[@_guid]?.finalized isnt true
-				contentShown = @get "showContent"
-				@set "showContent", false
-
-				if contentShown is true
-					@fire events.CONTENT_CHANGED
-
-			if globalOptions.unhandledRedirect isnt true
-				p_context.handled = true
-
-			p_next()
 
 		# Keep a reference to the created callbacks in case of teardown later
 		callbacks = page.callbacks.slice initialLength
