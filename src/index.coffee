@@ -281,7 +281,6 @@ Router = Ractive.extend
 						resolveScope.call @, p_scopes
 
 					applyScope: (p_scope) ->
-						@reset()
 						@scope = p_scope
 
 						if p_scope?
